@@ -1,1 +1,162 @@
+using System;
 
+namespace Console_Lab1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Встановлюємо кодування для коректного відображення української мови
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.InputEncoding = System.Text.Encoding.UTF8;
+
+            bool exit = false;
+            while (!exit)
+            {
+               
+                Console.WriteLine("Лабораторна робота №1. Виконав: Зварич Владислав, ІПЗ-12");
+                Console.WriteLine("-------------------------------------------------------");
+                Console.WriteLine("1. Об'єм конуса");
+                Console.WriteLine("2. Обчислення математичного виразу (x)");
+                Console.WriteLine("3. Обчислення функції f(x)");
+                Console.WriteLine("4. Світлофор (дії водія)");
+                Console.WriteLine("5. Обчислення суми ряду (S)");
+                Console.WriteLine("0. Вихід");
+                Console.Write("\nОберіть пункт меню: ");
+
+                // Використання switch згідно з умовою
+                string choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1": Task1(); break;
+                    case "2": Task2(); break;
+                    case "3": Task3(); break;
+                    case "4": Task4(); break;
+                    case "5": Task5(); break;
+                    case "0": exit = true; break;
+                    default:
+                        Console.WriteLine("Помилка! Оберіть пункт від 0 до 5.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+
+        // Завдання 1: Console та об'єм конуса
+        static void Task1()
+        {
+
+            Console.WriteLine("--- Завдання 1 ---");
+
+            Console.WriteLine("\nРозрахунок об'єму конуса:");
+            Console.Write("Введіть радіус основи (r): ");
+            double r = Convert.ToDouble(Console.ReadLine());
+            Console.Write("Введіть висоту (h): ");
+            double h = Convert.ToDouble(Console.ReadLine());
+
+            // Формула: V = 1/3 * PI * r^2 * h
+            double v = (1.0 / 3.0) * Math.PI * Math.Pow(r, 2) * h;
+            Console.WriteLine($"Об'єм конуса: {v:F3}");
+            Console.WriteLine("\nНатисніть будь-яку клавішу...");
+            Console.ReadKey();
+        }
+
+        // Завдання 2: Клас Math та складний вираз
+        static void Task2()
+        {
+            
+            Console.WriteLine("--- Завдання 2 ---");
+            Console.Write("Введіть значення a: ");
+            double a = double.Parse(Console.ReadLine());
+            Console.Write("Введіть значення b: ");
+            double b = double.Parse(Console.ReadLine());
+
+            // tg(a) + ctg(2b)
+            double part1 = Math.Tan(a) + (1.0 / Math.Tan(2 * b));
+
+            // sin(a+b) / (a-b)^3
+            double insideRoot = Math.Sin(a + b) / Math.Pow(a - b, 3);
+
+            // Корінь кубічний через Pow(..., 1/3)
+            double x = part1 * 2 * Math.Pow(insideRoot, 1.0 / 3.0);
+
+            Console.WriteLine($"Результат виразу x = {x:F4}");
+            Console.WriteLine("\nНатисніть будь-яку клавішу...");
+            Console.ReadKey();
+        }
+
+        // Завдання 3: Оператор if
+        static void Task3()
+        {
+            
+            Console.WriteLine("--- Завдання 3 ---");
+            Console.Write("Введіть a: ");
+            double a = double.Parse(Console.ReadLine());
+            Console.Write("Введіть b: ");
+            double b = double.Parse(Console.ReadLine());
+            Console.Write("Введіть x: ");
+            double x = double.Parse(Console.ReadLine());
+
+            double fx;
+            if (x < 0)
+            {
+                fx = 2 * x - a * b;
+            }
+            else if (x > 0)
+            {
+                fx = a * b - x;
+            }
+            else // x == 0
+            {
+                fx = a * b;
+            }
+
+            Console.WriteLine($"Результат f(x) = {fx}");
+            Console.WriteLine("\nНатисніть будь-яку клавішу...");
+            Console.ReadKey();
+        }
+
+        // Завдання 4: Оператор switch (світлофор)
+        static void Task4()
+        {
+           
+            Console.WriteLine("--- Завдання 4 ---");
+            Console.Write("Введіть колір світлофора (червоний, жовтий, зелений): ");
+            string color = Console.ReadLine().ToLower();
+
+            Console.Write("Дія водія: ");
+            switch (color)
+            {
+                case "червоний": Console.WriteLine("Зупинитися"); break;
+                case "жовтий": Console.WriteLine("Приготуватися / Чекати"); break;
+                case "зелений": Console.WriteLine("Можна їхати"); break;
+                default: Console.WriteLine("Невідомий сигнал"); break;
+            }
+            Console.WriteLine("\nНатисніть будь-яку клавішу...");
+            Console.ReadKey();
+        }
+
+        // Завдання 5: Цикл for та сума ряду
+        static void Task5()
+        {
+           
+            Console.WriteLine("--- Завдання 5 ---");
+            Console.Write("Введіть натуральне число n: ");
+            int n = int.Parse(Console.ReadLine());
+            Console.Write("Введіть дійсне число x (x > 0): ");
+            double x = double.Parse(Console.ReadLine());
+
+            double sum = 0;
+            for (int i = 1; i <= n; i++)
+            {
+                // Оскільки (-1)^(2i+1) завжди -1 для будь-якого цілого i
+                double term = -Math.Pow(x, 2 * i) / Math.Pow(2, i + 1);
+                sum += term;
+            }
+
+            Console.WriteLine($"Сума ряду S = {sum:F6}");
+            Console.WriteLine("\nНатисніть будь-яку клавішу...");
+            Console.ReadKey();
+        }
+    }
+}
