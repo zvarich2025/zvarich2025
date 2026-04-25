@@ -1,1 +1,182 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 
+namespace Lab5_IPZ12_Zvarych
+{
+    // === БАЗОВИЙ КЛАС ===
+    class Product
+    {
+        protected string name;
+        protected double baseCost;
+
+        // 1. Перевантаження конструкторів (3 типи)
+        public Product() // За замовчуванням
+        {
+            name = "Невідомий виріб";
+            baseCost = 0;
+        }
+
+        public Product(string name, double cost) // З параметрами
+        {
+            this.name = name;
+            this.baseCost = cost;
+        }
+
+        public Product(Product other) // Копіювання
+        {
+            this.name = other.name;
+            this.baseCost = other.baseCost;
+        }
+
+        public string Name => name;
+
+        // Віртуальні методи для перевантаження в похідних класах
+        public virtual double CalculatePrice() => baseCost;
+        public virtual double CalculateQuantity(double totalRawMaterial) => 0;
+
+        public virtual void Display()
+        {
+            Console.WriteLine($"Виріб: {name}, Базова вартість: {baseCost}");
+        }
+    }
+
+    // === ПОХІДНИЙ КЛАС: ДЕТАЛЬ ===
+    class Detail : Product
+    {
+        private double materialWeight;
+        private double materialPrice;
+
+        // Конструктори
+        public Detail() : base() { materialWeight = 0; materialPrice = 0; }
+
+        public Detail(string name, double cost, double weight, double mPrice)
+            : base(name, cost)
+        {
+            materialWeight = weight;
+            materialPrice = mPrice;
+        }
+
+        public Detail(Detail other) : base(other)
+        {
+            this.materialWeight = other.materialWeight;
+            this.materialPrice = other.materialPrice;
+        }
+
+        // Властивості
+        public double Weight { get => materialWeight; set => materialWeight = value; }
+
+        // override методи
+        public override double CalculatePrice()
+        {
+            return (materialWeight * materialPrice) + baseCost;
+        }
+
+        public override double CalculateQuantity(double totalRawMaterial)
+        {
+            return totalRawMaterial / materialWeight;
+        }
+
+        // Перевантаження БІНАРНИХ операторів
+        public static bool operator >(Detail d1, Detail d2) => d1.CalculatePrice() > d2.CalculatePrice();
+        public static bool operator <(Detail d1, Detail d2) => d1.CalculatePrice() < d2.CalculatePrice();
+        public static bool operator ==(Detail d1, Detail d2) => d1.CalculatePrice() == d2.CalculatePrice();
+        public static bool operator !=(Detail d1, Detail d2) => !(d1 == d2);
+
+        // Перевантаження УНАРНИХ операторів
+        public static Detail operator ++(Detail d) { d.materialWeight += 0.1; return d; }
+        public static Detail operator --(Detail d) { d.materialWeight -= 0.1; return d; }
+        public static Detail operator -(Detail d) { d.baseCost = -d.baseCost; return d; } // "Брак" - від'ємна вартість
+
+        public override void Display()
+        {
+            Console.WriteLine($"[Деталь] {name}: Вартість = {CalculatePrice():F2}, Вага = {materialWeight}кг");
+        }
+    }
+
+    // === ПОХІДНИЙ КЛАС: АГРЕГАТ (Новий для Лаби №5) ===
+    class Aggregate : Product
+    {
+        private int complexityFactor;
+
+        public Aggregate(string name, double cost, int complexity) : base(name, cost)
+        {
+            complexityFactor = complexity;
+        }
+
+        public override double CalculatePrice() => baseCost * complexityFactor;
+
+        public override void Display()
+        {
+            Console.WriteLine($"[Агрегат] {name}: Складність = {complexityFactor}, Ціна = {CalculatePrice()}");
+        }
+    }
+
+    // === КЛАС-КОЛЕКЦІЯ З ІНДЕКСАТОРОМ ===
+    class DetailStore
+    {
+        private Detail[] items;
+        public DetailStore(int size) { items = new Detail[size]; }
+
+        // Індексатор
+        public Detail this[int index]
+        {
+            get => items[index];
+            set => items[index] = value;
+        }
+
+        public int Length => items.Length;
+    }
+
+    // === ГОЛОВНА ПРОГРАМА ===
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            string logPath = "lab5_results.txt";
+            using (StreamWriter sw = new StreamWriter(logPath))
+            {
+                void LogAndPrint(string message)
+                {
+                    Console.WriteLine(message);
+                    sw.WriteLine(message);
+                }
+
+                LogAndPrint("--- Лабораторна робота №5: Варіант 4 ---");
+
+                // Робота з індексатором
+                DetailStore store = new DetailStore(3);
+                store[0] = new Detail("Болт", 5, 0.2, 50);
+                store[1] = new Detail("Гайка", 3, 0.1, 40);
+                store[2] = new Detail("Вал", 100, 5.0, 60);
+
+                LogAndPrint("\n1. Список деталей через індексатор:");
+                for (int i = 0; i < store.Length; i++)
+                {
+                    LogAndPrint($"{store[i].Name} - Ціна: {store[i].CalculatePrice()} грн");
+                }
+
+                // Демонстрація операторів
+                LogAndPrint("\n2. Перевантаження операторів:");
+                if (store[2] > store[0])
+                    LogAndPrint($"Деталь '{store[2].Name}' дорожча за '{store[0].Name}'");
+
+                Detail temp = store[0];
+                LogAndPrint($"Початкова вага {temp.Name}: {temp.Weight}");
+                temp++; // інкремент ваги
+                LogAndPrint($"Вага після ++: {temp.Weight}");
+
+                // Поліморфізм (Агрегат)
+                Aggregate engine = new Aggregate("Двигун", 5000, 3);
+                LogAndPrint("\n3. Поліморфізм (Агрегат):");
+                engine.Display();
+
+                LogAndPrint($"\nРезультати також збережено у файл: {Path.GetFullPath(logPath)}");
+            }
+
+            Console.WriteLine("\nНатисніть будь-яку клавішу для виходу...");
+            Console.ReadKey();
+        }
+    }
+}
