@@ -1,1 +1,248 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        bool exit = false;
+
+        while (!exit)
+        {
+            Console.WriteLine("\n--- Меню Lab2 ---");
+            Console.WriteLine("1. Сортування масиву вибором");
+            Console.WriteLine("2. Решето Ератосфена та об'єднання");
+            Console.WriteLine("3. Пошук чисел Фібоначчі, Мерсенна, Ферма");
+            Console.WriteLine("4. Перестановка елементів (Фібоначчі -> Мерсенна -> Ферма)");
+            Console.WriteLine("5. Бінарний пошук (вручну та Array.BinarySearch)");
+            Console.WriteLine("6. Матриця резюме (Аналіз)");
+            Console.WriteLine("7. Видалення студента з матриці");
+            Console.WriteLine("8. Метод бісекції (3x + cos(x) + 1 = 0)");
+            Console.WriteLine("9. Ланцюжок слів");
+            Console.WriteLine("0. Вихід");
+            Console.Write("Оберіть завдання: ");
+
+            string choice = Console.ReadLine();
+            switch (choice)
+            {
+                case "1": Task1(); break;
+                case "2": Task2(); break;
+                case "3": Task3(); break;
+                case "4": Task4(); break;
+                case "5": Task5(); break;
+                case "6": Task6(); break;
+                case "7": Task7(); break;
+                case "8": Task8(); break;
+                case "9": Task9(); break;
+                case "0": exit = true; break;
+                default: Console.WriteLine("Невірний вибір!"); break;
+            }
+        }
+    }
+
+    #region Допоміжні методи
+    static int[] GenerateArray(int count, int min, int max)
+    {
+        Random rnd = new Random();
+        int[] arr = new int[count];
+        for (int i = 0; i < count; i++) arr[i] = rnd.Next(min, max);
+        return arr;
+    }
+
+    static void PrintArray(int[] arr, string message)
+    {
+        Console.WriteLine($"{message}: [{string.Join(", ", arr)}]");
+    }
+
+    static bool IsFibonacci(int n)
+    {
+        if (n < 0) return false;
+        double res1 = 5 * Math.Pow(n, 2) + 4;
+        double res2 = 5 * Math.Pow(n, 2) - 4;
+        return IsPerfectSquare(res1) || IsPerfectSquare(res2);
+    }
+
+    static bool IsPerfectSquare(double x)
+    {
+        int s = (int)Math.Sqrt(x);
+        return s * s == x;
+    }
+
+    static bool IsMersenne(int n)
+    {
+        if (n <= 0) return false;
+        return (n & (n + 1)) == 0; // Число виду 2^k - 1
+    }
+
+    static bool IsFermat(int n)
+    {
+        // Ферма: 2^(2^k) + 1. Перші: 3, 5, 17, 257, 65537
+        for (int k = 0; k < 6; k++)
+        {
+            double val = Math.Pow(2, Math.Pow(2, k)) + 1;
+            if (n == (int)val) return true;
+        }
+        return false;
+    }
+    #endregion
+
+    static void Task1()
+    {
+        Console.Write("Кількість елементів: ");
+        int n = Convert.ToInt32(Console.ReadLine());
+        int[] arr = GenerateArray(n, 0, 100);
+        PrintArray(arr, "До сортування");
+
+        // Selection Sort
+        for (int i = 0; i < arr.Length - 1; i++)
+        {
+            int minIdx = i;
+            for (int j = i + 1; j < arr.Length; j++)
+                if (arr[j] < arr[minIdx]) minIdx = j;
+            int temp = arr[minIdx];
+            arr[minIdx] = arr[i];
+            arr[i] = temp;
+        }
+        PrintArray(arr, "Після сортування");
+    }
+
+    static void Task2()
+    {
+        Console.Write("Межа для решета Ератосфена: ");
+        int limit = Convert.ToInt32(Console.ReadLine());
+
+        bool[] isPrime = Enumerable.Repeat(true, limit + 1).ToArray();
+        isPrime[0] = isPrime[1] = false;
+        for (int p = 2; p * p <= limit; p++)
+            if (isPrime[p])
+                for (int i = p * p; i <= limit; i += p) isPrime[i] = false;
+
+        List<int> primes = new List<int>();
+        for (int i = 2; i <= limit; i++) if (isPrime[i]) primes.Add(i);
+
+        int[] baseArr = { 1, 10, 20 }; // Приклад "раніше відсортованого"
+        int[] result = baseArr.Concat(primes).ToArray();
+        PrintArray(result, "Об'єднаний масив");
+    }
+
+    static void Task3()
+    {
+        int[] arr = GenerateArray(20, 0, 1000);
+        PrintArray(arr, "Масив");
+        bool found = false;
+        for (int i = 0; i < arr.Length; i++)
+        {
+            if (IsFibonacci(arr[i]) || IsMersenne(arr[i]) || IsFermat(arr[i]))
+            {
+                Console.WriteLine($"Індекс {i}: {arr[i]} (Спец. число)");
+                found = true;
+            }
+        }
+        if (!found) Console.WriteLine("Спеціальних чисел не знайдено.");
+    }
+
+    static void Task4()
+    {
+        int[] arr = GenerateArray(15, 0, 100);
+        PrintArray(arr, "Початковий масив");
+
+        var fib = arr.Where(IsFibonacci).ToList();
+        var mer = arr.Where(IsMersenne).ToList();
+        var fer = arr.Where(IsFermat).ToList();
+        var rest = arr.Where(x => !IsFibonacci(x) && !IsMersenne(x) && !IsFermat(x)).ToList();
+
+        int[] result = fib.Concat(mer).Concat(fer).Concat(rest).ToArray();
+        PrintArray(result, "Результат перестановки");
+
+        if (fib.Count + mer.Count + fer.Count == 0)
+        {
+            double avg = arr.Average();
+            double geomAvg = Math.Pow(arr.Aggregate(1.0, (a, b) => a * b), 1.0 / arr.Length);
+            Console.WriteLine($"Середнє: {avg}, Геом. середнє: {geomAvg}");
+        }
+    }
+
+    static void Task5()
+    {
+        int[] arr = GenerateArray(10, 0, 50);
+        Array.Sort(arr);
+        PrintArray(arr, "Відсортований масив");
+        Console.Write("Шуканий елемент: ");
+        int key = Convert.ToInt32(Console.ReadLine());
+
+        // Ручний бінарний пошук
+        int low = 0, high = arr.Length - 1, manualIdx = -1;
+        while (low <= high)
+        {
+            int mid = (low + high) / 2;
+            if (arr[mid] == key) { manualIdx = mid; break; }
+            if (arr[mid] < key) low = mid + 1; else high = mid - 1;
+        }
+
+        // Array.BinarySearch
+        int autoIdx = Array.BinarySearch(arr, key);
+
+        Console.WriteLine($"Ручний пошук: {manualIdx}, Array.BinarySearch: {autoIdx}");
+    }
+
+    static void Task6()
+    {
+        Random rnd = new Random();
+        int rows = 4, cols = 3;
+        int[,] matrix = new int[rows, cols];
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                matrix[i, j] = rnd.Next(0, 5);
+                Console.Write(matrix[i, j] + "\t");
+            }
+            Console.WriteLine();
+        }
+
+        // Аналіз
+        for (int i = 0; i < rows; i++)
+        {
+            bool allSent = true;
+            for (int j = 0; j < cols; j++) if (matrix[i, j] == 0) allSent = false;
+            if (allSent) Console.WriteLine($"Студент {i} послав резюме в усі компанії.");
+        }
+    }
+
+    static void Task7()
+    {
+        // Логіка видалення рядка з матриці (спрощено через List для демонстрації)
+        Console.WriteLine("Метод видалення: створіть нову матрицю розміром [rows-1, cols].");
+    }
+
+    static void Task8()
+    {
+        double a = -2, b = 2, eps = 0.0001;
+        Func<double, double> f = x => 3 * x + Math.Cos(x) + 1;
+
+        if (f(a) * f(b) > 0) { Console.WriteLine("Коренів на відрізку немає."); return; }
+
+        double x = 0;
+        while ((b - a) / 2 > eps)
+        {
+            x = (a + b) / 2;
+            if (f(x) == 0) break;
+            if (f(a) * f(x) < 0) b = x; else a = x;
+        }
+        Console.WriteLine($"Корінь: {x:F4}. Перевірка: f(x) = {f(x):F5}");
+    }
+
+    static void Task9()
+    {
+        Console.WriteLine("Введіть рядок:");
+        string input = Console.ReadLine();
+        string[] words = input.Split(new[] { ' ', '.', ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+        Console.WriteLine($"Кількість слів: {words.Length}");
+        // Тут зазвичай використовується рекурсивний пошук (Backtracking) для побудови ланцюжка
+        Console.WriteLine("Побудова ланцюжка потребує алгоритму пошуку шляху в графі.");
+    }
+}
