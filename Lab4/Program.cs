@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Lab4_Varych
 {
-    // === ТРЕТЯ ТА ДРУГА ВЕРСІЯ: ІНТЕРФЕЙС ТА АБСТРАКТНИЙ КЛАС ===
+    // ІНТЕРФЕЙС ТА АБСТРАКТНИЙ КЛАС ===
 
     // Інтерфейс для виробу
     public interface IProduct
