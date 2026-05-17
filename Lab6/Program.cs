@@ -1,3 +1,4 @@
+//Головна точка входу, яка налаштовує UTF-8, створює об'єкти, підписує модулі на події та запускає 5 тест-сценаріїв.
 using System;
 using System.Collections.Generic;
 using System.IO;
