@@ -1,3 +1,4 @@
+//Базовий клас пристрою, що об'єднує залізяки, керує діагностикою, прогнозує здоров'я та містить подію тривоги.
 using System;
 using System.Collections.Generic;
 using System.IO;
